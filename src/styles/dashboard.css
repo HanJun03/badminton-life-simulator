@@ -1,0 +1,293 @@
+.allocation-head {
+  display: flex;
+  justify-content: space-between;
+  align-items: end;
+  text-align: left;
+}
+.allocation-head > strong {
+  color: #f5b942;
+}
+.attribute-cards {
+  display: grid;
+  gap: 12px;
+  margin: 18px 0 24px;
+}
+.attribute-card {
+  padding: 16px;
+  border: 1px solid #29445b;
+  border-radius: 15px;
+  background: #172635;
+}
+.attribute-top {
+  display: grid;
+  grid-template-columns: 1fr auto 38px;
+  gap: 12px;
+  align-items: center;
+  color: #dce8f1;
+  text-align: left;
+}
+.attribute-top strong {
+  color: #f5b942;
+  font-size: 23px;
+}
+.plus-icon {
+  display: grid;
+  place-items: center;
+  width: 36px;
+  height: 36px;
+  padding: 0;
+  border: 1px solid #3c6c96;
+  border-radius: 10px;
+  color: #8bc6ff;
+  background: #1c3247;
+}
+.plus-icon:hover:not(:disabled) {
+  color: #101923;
+  background: #f5b942;
+}
+.attribute-track {
+  height: 7px;
+  margin-top: 14px;
+  overflow: hidden;
+  border-radius: 99px;
+  background: #07111b;
+}
+.attribute-track div {
+  height: 100%;
+  border-radius: inherit;
+  background: linear-gradient(90deg, #4f9ce8, #f5b942);
+  transition: width 0.2s ease;
+}
+.attribute-scale {
+  display: flex;
+  justify-content: space-between;
+  margin-top: 7px;
+  color: #7891a5;
+  font-size: 11px;
+}
+
+/* Profile Card Styling */
+.profile-card {
+  background: #0d1824;
+  border: 1px solid #1e3347;
+  border-radius: 18px;
+  padding: 16px 20px;
+  margin-bottom: 24px;
+  text-align: left;
+  box-shadow: 0 10px 30px rgba(0, 0, 0, 0.4);
+}
+
+.profile-card-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding-bottom: 12px;
+  border-bottom: 1px solid #192b3d;
+  font-size: 12px;
+}
+
+.profile-stage-left {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.country-code-tag {
+  font-weight: 700;
+  color: #8fa7ba;
+  letter-spacing: 0.05em;
+}
+
+.stage-badge {
+  background: #ff5e3a;
+  color: #fff;
+  font-size: 11px;
+  font-weight: 700;
+  padding: 2px 6px;
+  border-radius: 4px;
+}
+
+.stage-title {
+  color: #dce8f1;
+  font-weight: 600;
+}
+
+.profile-stage-right {
+  color: #657e93;
+  font-size: 11px;
+  font-weight: 500;
+}
+
+.profile-main-row {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 16px 0 14px;
+  border-bottom: 1px solid #192b3d;
+}
+
+.profile-player-info {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+}
+
+.player-number-badge {
+  width: 48px;
+  height: 48px;
+  background: linear-gradient(135deg, #ff7a45, #fa541c);
+  color: #fff;
+  border-radius: 12px;
+  display: grid;
+  place-items: center;
+  font-size: 24px;
+  font-weight: 800;
+  box-shadow: 0 4px 12px rgba(250, 84, 28, 0.35);
+  flex-shrink: 0;
+}
+
+.player-name-block {
+  display: flex;
+  flex-direction: column;
+  gap: 3px;
+}
+
+.player-name-text {
+  margin: 0;
+  color: #ffffff;
+  font-size: 22px;
+  font-weight: 800;
+  letter-spacing: -0.02em;
+}
+
+.player-sub-meta {
+  margin: 0;
+  color: #8fa7ba;
+  font-size: 13px;
+}
+
+.dot-divider {
+  margin: 0 4px;
+  opacity: 0.5;
+}
+
+.player-archetype-line {
+  margin: 2px 0 0;
+  font-size: 12px;
+  color: #6c889e;
+}
+
+.archetype-highlight {
+  color: #f5b942;
+}
+
+.profile-ovr-box {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  padding-left: 12px;
+}
+
+.ovr-number {
+  font-size: 38px;
+  font-weight: 900;
+  line-height: 1;
+  color: #ff5e3a;
+  letter-spacing: -0.03em;
+}
+
+.ovr-label {
+  font-size: 11px;
+  font-weight: 700;
+  color: #8fa7ba;
+  letter-spacing: 0.1em;
+}
+
+/* Status Grid (4 items: 健康, 疲劳, 状态, 信心) */
+.profile-status-grid {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  padding: 12px 0;
+  border-bottom: 1px solid #192b3d;
+  text-align: center;
+}
+
+.status-item {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  position: relative;
+}
+
+.status-item:not(:last-child)::after {
+  content: "";
+  position: absolute;
+  right: 0;
+  top: 15%;
+  height: 70%;
+  width: 1px;
+  background: #192b3d;
+}
+
+.status-value {
+  font-size: 20px;
+  font-weight: 800;
+}
+
+.status-value.health {
+  color: #52c41a;
+}
+
+.status-value.fatigue {
+  color: #fa8c16;
+}
+
+.status-value.morale {
+  color: #1890ff;
+}
+
+.status-value.confidence {
+  color: #f5b942;
+}
+
+.status-label {
+  font-size: 11px;
+  color: #7891a5;
+}
+
+/* Stats Grid (3 items: 积分, 声望, 知名度) */
+.profile-stats-grid {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  padding-top: 12px;
+  text-align: center;
+}
+
+.stats-col {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  position: relative;
+}
+
+.stats-col:not(:last-child)::after {
+  content: "";
+  position: absolute;
+  right: 0;
+  top: 15%;
+  height: 70%;
+  width: 1px;
+  background: #192b3d;
+}
+
+.stat-num {
+  font-size: 16px;
+  font-weight: 700;
+  color: #dce8f1;
+}
+
+.stat-tag {
+  font-size: 11px;
+  color: #657e93;
+}

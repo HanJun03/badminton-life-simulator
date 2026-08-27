@@ -1,0 +1,47 @@
+body:has(.dark-dashboard),
+body:has(.card > .eyebrow) {
+  background: #0b121b;
+  color: #dce8f1;
+}
+.dark-dashboard,
+.card:has(> .eyebrow) {
+  background: #111d29 !important;
+  color: #dce8f1;
+}
+.card:has(> .eyebrow) {
+  border-color: #263b50;
+  box-shadow: 0 24px 70px #0008;
+  width: min(680px, 100%);
+  margin: auto;
+  box-sizing: border-box;
+}
+.dark-dashboard h1,
+.card:has(> .eyebrow) h1 {
+  color: #f5b942;
+}
+.dark-dashboard h2,
+.card:has(> .eyebrow) h2 {
+  color: #8bc6ff;
+}
+.dark-dashboard p,
+.card:has(> .eyebrow) p {
+  color: #a9bdd0;
+}
+.dark-dashboard button,
+.card:has(> .eyebrow) button {
+  background: #f5b942;
+  color: #101923;
+}
+.dark-dashboard .result,
+.dark-dashboard .stats div,
+.card:has(> .eyebrow) .result,
+.card:has(> .eyebrow) .stats div {
+  background: #172635;
+  border-color: #29445b;
+}
+.dark-dashboard .result h2,
+.dark-dashboard .stats strong,
+.card:has(> .eyebrow) .result h2,
+.card:has(> .eyebrow) .stats strong {
+  color: #f5b942;
+}
