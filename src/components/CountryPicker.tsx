@@ -28,20 +28,23 @@ interface CountryPickerProps {
 
 export function CountryPicker({ value, onChange }: CountryPickerProps) {
   return (
-    <div className="country-grid">
+    <div className="grid grid-cols-2 sm:grid-cols-4 gap-2">
       {countries.map(({ code, iso2, label }) => (
         <button
-          className={
-            value === code ? "country-chip selected" : "country-chip"
-          }
+          className={`flex items-center justify-center gap-2 py-2 px-3 rounded-xl text-xs font-bold border transition-all cursor-pointer ${
+            value === code
+              ? "bg-[#18344e] border-blue-400 text-white shadow-sm"
+              : "bg-[#112030] border-[#1e354c] text-slate-400 hover:bg-[#16273b] hover:text-slate-200"
+          }`}
           key={code}
           type="button"
           onClick={() => onChange(code)}
         >
-          <FlagImage iso2={iso2} alt={label} />
+          <FlagImage iso2={iso2} alt={label} width={18} height={12} />
           <span>{label}</span>
         </button>
       ))}
     </div>
   );
 }
+

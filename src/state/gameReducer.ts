@@ -1,16 +1,186 @@
-import type { Player } from '../game/player'
-import { createPlayer } from '../game/player'
-import { trainPlayer } from '../game/training'
-import { createRNG } from '../game/rng'
-import { createAIPool } from '../game/ai'
-import { tournaments } from '../data/tournaments'
-import { canEnterTournament, runTournament, type TournamentResult } from '../game/tournament'
-import { updateRankings } from '../game/ranking'
-import { advanceAge } from '../game/progression'
-import { recoverFromInjuries } from '../game/injury'
-import { careerEvents } from '../data/events'
-import { applyMonthlyTraining, applyMonthlyRest, awardAnnualPoints, type MonthlyTraining } from '../game/monthly'
-export interface GameState { player: Player | null; seed: string; lastTournament: TournamentResult | null; activeEvent: string | null }
-export type GameAction = { type: 'CREATE_PLAYER'; payload: { name: string; nationality?: string; handedness?: 'left' | 'right'; height?: number; weight?: number } } | { type: 'TRAIN'; payload: { category: 'technical' | 'physical' | 'mental' | 'recovery'; intensity: 'low' | 'normal' | 'high' } } | { type: 'PLAY_TOURNAMENT'; payload: { tournamentId: string } } | { type: 'MONTHLY_TRAINING'; payload: { kind: MonthlyTraining } } | { type: 'MONTHLY_REST' } | { type: 'ANNUAL_SETTLEMENT'; payload: { achievementBonus: number } } | { type: 'ADVANCE_SEASON' } | { type: 'TRIGGER_EVENT' } | { type: 'CHOOSE_EVENT'; payload: { choiceId: string } } | { type: 'RETIRE' } | { type: 'RESET' }
-export const initialState: GameState = { player: null, seed: 'MALAYSIA2026', lastTournament: null, activeEvent: null }
-export function gameReducer(state: GameState, action: GameAction): GameState { const p = state.player; if (action.type === 'CREATE_PLAYER') return { ...state, player: createPlayer(action.payload.name, 'all-round', action.payload.nationality ?? 'MAS', action.payload.handedness ?? 'right', action.payload.height ?? 175, action.payload.weight ?? 70) }; if (!p) return action.type === 'RESET' ? initialState : state; if (action.type === 'MONTHLY_TRAINING') return { ...state, player: applyMonthlyTraining(p, action.payload.kind) }; if (action.type === 'MONTHLY_REST') return { ...state, player: applyMonthlyRest(p) }; if (action.type === 'ANNUAL_SETTLEMENT') return { ...state, player: awardAnnualPoints(p, action.payload.achievementBonus) }; if (action.type === 'TRAIN' && !p.retired) return { ...state, player: trainPlayer(p, action.payload.category, action.payload.intensity, createRNG(`${state.seed}-${p.currentSeason}-${p.fatigue}`)) }; if (action.type === 'PLAY_TOURNAMENT' && !p.retired) { const t = tournaments.find(x => x.id === action.payload.tournamentId); if (!t || !canEnterTournament(p, t)) return state; const result = runTournament(p, createAIPool(5, createRNG(`${state.seed}-${t.id}-${p.currentSeason}`)), t, createRNG(`${state.seed}-matches-${p.currentSeason}`)); const ranked = updateRankings([result.player, ...createAIPool(20, createRNG(`${state.seed}-ranking`))]).find(x => x.id === result.player.id) ?? result.player; return { ...state, player: ranked, lastTournament: result.result } }; if (action.type === 'ADVANCE_SEASON' && !p.retired) return { ...state, player: recoverFromInjuries(advanceAge(p)), lastTournament: null }; if (action.type === 'TRIGGER_EVENT' && !p.retired) return { ...state, activeEvent: careerEvents[0]?.id ?? null }; if (action.type === 'CHOOSE_EVENT' && state.activeEvent) { const e = careerEvents.find(x => x.id === state.activeEvent); const c = e?.choices.find(x => x.id === action.payload.choiceId); return c ? { ...state, player: c.apply(p), activeEvent: null } : state }; if (action.type === 'RETIRE') return { ...state, player: { ...p, retired: true }, activeEvent: null }; if (action.type === 'RESET') return initialState; return state }
+import type { Player } from "../game/player";
+import { createPlayer } from "../game/player";
+import { createRNG } from "../game/rng";
+import { tournaments } from "../data/tournaments";
+import { canEnterTournament } from "../game/tournament";
+import {
+  applyMonthlyTraining,
+  applyMonthlyRest,
+  applyAnnualSettlement,
+  computeAnnualReport,
+  initialSeasonLog,
+  type MonthlyTraining,
+  type SeasonLog,
+  type AnnualReport,
+} from "../game/monthly";
+import {
+  simulateMonthlyTournament,
+  type MonthlyTournamentResult,
+} from "../game/monthlyTournament";
+
+export interface GameState {
+  player: Player | null;
+  seed: string;
+  currentMonth: number; // 1 - 12
+  seasonLog: SeasonLog;
+  lastMonthlyTournament: MonthlyTournamentResult | null;
+  annualReport: AnnualReport | null;
+}
+
+export type GameAction =
+  | {
+      type: "CREATE_PLAYER";
+      payload: {
+        name: string;
+        nationality?: string;
+        handedness?: "left" | "right";
+        height?: number;
+        weight?: number;
+      };
+    }
+  | { type: "MONTHLY_ACTION_TRAIN"; payload: { kind: MonthlyTraining } }
+  | { type: "MONTHLY_ACTION_REST" }
+  | { type: "MONTHLY_ACTION_TOURNAMENT"; payload: { tournamentId: string } }
+  | { type: "CLEAR_MONTHLY_TOURNAMENT_RESULT" }
+  | { type: "START_ANNUAL_SETTLEMENT" }
+  | {
+      type: "APPLY_ANNUAL_SETTLEMENT";
+      payload: { allocatedAttributes: Record<string, number> };
+    }
+  | {
+      type: "UPDATE_ATTRIBUTES";
+      payload: { attributes: Record<string, number> };
+    }
+  | { type: "RESET" };
+
+export const initialState: GameState = {
+  player: null,
+  seed: "MALAYSIA2026",
+  currentMonth: 1,
+  seasonLog: initialSeasonLog,
+  lastMonthlyTournament: null,
+  annualReport: null,
+};
+
+export function gameReducer(state: GameState, action: GameAction): GameState {
+  const p = state.player;
+
+  if (action.type === "CREATE_PLAYER") {
+    return {
+      ...initialState,
+      player: createPlayer(
+        action.payload.name,
+        "all-round",
+        action.payload.nationality ?? "MAS",
+        action.payload.handedness ?? "right",
+        action.payload.height ?? 175,
+        action.payload.weight ?? 70,
+      ),
+      currentMonth: 1,
+      seasonLog: initialSeasonLog,
+    };
+  }
+
+  if (!p) return action.type === "RESET" ? initialState : state;
+
+  if (action.type === "UPDATE_ATTRIBUTES") {
+    return {
+      ...state,
+      player: {
+        ...p,
+        attributes: {
+          ...p.attributes,
+          ...action.payload.attributes,
+        } as typeof p.attributes,
+      },
+    };
+  }
+
+  // 1. 训练行动（身体、技术、心理 9 项）
+  if (action.type === "MONTHLY_ACTION_TRAIN") {
+    const rng = createRNG(`${state.seed}-${p.id}-${p.currentSeason}-${state.currentMonth}-train`);
+    const { player: updatedPlayer } = applyMonthlyTraining(p, action.payload.kind, rng);
+    const updatedSeasonLog: SeasonLog = {
+      ...state.seasonLog,
+      trainingMonths: state.seasonLog.trainingMonths + 1,
+    };
+
+    return {
+      ...state,
+      player: updatedPlayer,
+      seasonLog: updatedSeasonLog,
+      currentMonth: state.currentMonth + 1,
+    };
+  }
+
+  // 2. 休息行动
+  if (action.type === "MONTHLY_ACTION_REST") {
+    const updatedPlayer = applyMonthlyRest(p);
+    const updatedSeasonLog: SeasonLog = {
+      ...state.seasonLog,
+      restMonths: state.seasonLog.restMonths + 1,
+    };
+
+    return {
+      ...state,
+      player: updatedPlayer,
+      seasonLog: updatedSeasonLog,
+      currentMonth: state.currentMonth + 1,
+    };
+  }
+
+  // 3. 参加比赛行动
+  if (action.type === "MONTHLY_ACTION_TOURNAMENT") {
+    const tourney = tournaments.find((t) => t.id === action.payload.tournamentId);
+    if (!tourney || !canEnterTournament(p, tourney)) return state;
+
+    const rng = createRNG(`${state.seed}-${p.id}-${p.currentSeason}-${state.currentMonth}-tourney`);
+    const { player: updatedPlayer, result } = simulateMonthlyTournament(p, tourney, rng);
+    const updatedSeasonLog: SeasonLog = {
+      ...state.seasonLog,
+      tournamentResults: [...state.seasonLog.tournamentResults, result],
+    };
+
+    return {
+      ...state,
+      player: updatedPlayer,
+      seasonLog: updatedSeasonLog,
+      lastMonthlyTournament: result,
+      currentMonth: state.currentMonth + 1,
+    };
+  }
+
+  if (action.type === "CLEAR_MONTHLY_TOURNAMENT_RESULT") {
+    return {
+      ...state,
+      lastMonthlyTournament: null,
+    };
+  }
+
+  // 4. 进入年度结算
+  if (action.type === "START_ANNUAL_SETTLEMENT") {
+    const report = computeAnnualReport(p, state.seasonLog);
+    return {
+      ...state,
+      annualReport: report,
+    };
+  }
+
+  // 5. 应用年度结算加点 & 开始新的一年
+  if (action.type === "APPLY_ANNUAL_SETTLEMENT") {
+    const updatedPlayer = applyAnnualSettlement(p, action.payload.allocatedAttributes);
+    return {
+      ...state,
+      player: updatedPlayer,
+      currentMonth: 1,
+      seasonLog: initialSeasonLog,
+      annualReport: null,
+      lastMonthlyTournament: null,
+    };
+  }
+
+  if (action.type === "RESET") return initialState;
+
+  return state;
+}
+

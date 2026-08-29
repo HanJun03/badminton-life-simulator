@@ -27,43 +27,67 @@ export function CreatorPage() {
   );
 
   return (
-    <div className="creator-v4">
-      <section className="creator-panel">
-        <p className="eyebrow">
+    <div className="min-h-screen flex justify-center items-start p-4 sm:p-8 box-border text-center bg-[#070d14] text-slate-100 font-sans">
+      <section className="w-full max-w-160 bg-[#09111b] border border-[#1a2d3f] rounded-3xl p-6 sm:p-8 shadow-2xl flex flex-col gap-5 text-left">
+        <p className="text-xs font-bold text-emerald-400 tracking-widest uppercase m-0">
           {step === 1 ? "01 · 创建球员" : "02 · 属性面板"}
         </p>
+
         {step === 1 ? (
           <>
-            <h1>羽球人生模拟器</h1>
-            <p className="subtitle">球风将在职业生涯中逐步发展。</p>
-            <input
-              placeholder="输入球员名字"
-              value={name}
-              onChange={(e) => setName(e.target.value)}
-            />
-            <h2>选择国籍</h2>
-            <CountryPicker value={nation} onChange={setNation} />
+            <div>
+              <h1 className="text-xl font-black text-white m-0">
+                羽球人生模拟器
+              </h1>
+              <p className="text-sm text-slate-400 mt-1 mb-0">
+                球风将在职业生涯中逐步发展。
+              </p>
+            </div>
 
-            <h2>惯用手</h2>
-            <div className="hand-grid">
-              <button
-                className={
-                  hand === "left" ? "country-chip selected" : "country-chip"
-                }
-                type="button"
-                onClick={() => setHand("left")}
-              >
-                左手
-              </button>
-              <button
-                className={
-                  hand === "right" ? "country-chip selected" : "country-chip"
-                }
-                type="button"
-                onClick={() => setHand("right")}
-              >
-                右手
-              </button>
+            {/* 输入框：修复字体颜色为高亮白底深色输入框 */}
+            <div className="flex flex-col gap-1.5">
+              <label className="text-xs font-bold text-slate-300">
+                球员姓名
+              </label>
+              <input
+                className="w-full bg-[#112030] border focus:border-blue-500 focus:outline-none text-black text-sm font-semibold rounded-xl px-4 py-3 transition-colors shadow-inner"
+                placeholder="输入球员名字（如：李宗伟、林丹）"
+                value={name}
+                onChange={(e) => setName(e.target.value)}
+              />
+            </div>
+
+            <div className="flex flex-col gap-2">
+              <h2 className="text-sm font-bold text-slate-300 m-0">选择国籍</h2>
+              <CountryPicker value={nation} onChange={setNation} />
+            </div>
+
+            <div className="flex flex-col gap-2">
+              <h2 className="text-sm font-bold text-slate-300 m-0">持拍手</h2>
+              <div className="grid grid-cols-2 gap-3">
+                <button
+                  className={`py-2.5 px-4 rounded-xl text-xs font-bold border transition-all cursor-pointer ${
+                    hand === "left"
+                      ? "bg-linear-to-br from-blue-600 to-blue-700 border-blue-400 text-white shadow-md"
+                      : "bg-[#112030] border-[#1e354c] text-slate-300 hover:bg-[#16273b]"
+                  }`}
+                  type="button"
+                  onClick={() => setHand("left")}
+                >
+                  左手持拍
+                </button>
+                <button
+                  className={`py-2.5 px-4 rounded-xl text-xs font-bold border transition-all cursor-pointer ${
+                    hand === "right"
+                      ? "bg-linear-to-br from-blue-600 to-blue-700 border-blue-400 text-white shadow-md"
+                      : "bg-[#112030] border-[#1e354c] text-slate-300 hover:bg-[#16273b]"
+                  }`}
+                  type="button"
+                  onClick={() => setHand("right")}
+                >
+                  右手持拍
+                </button>
+              </div>
             </div>
 
             <SliderCard
@@ -87,17 +111,28 @@ export function CreatorPage() {
             <button
               disabled={!name.trim()}
               type="button"
+              className="mt-2 w-full bg-linear-to-br from-blue-600 to-blue-700 hover:from-blue-500 hover:to-blue-600 disabled:opacity-40 text-white text-sm font-black py-3.5 rounded-xl cursor-pointer transition-all shadow-lg"
               onClick={() => setStep(2)}
             >
-              下一步
+              下一步：预览属性
             </button>
           </>
         ) : (
           <>
-            <h1>{name}</h1>
-            <p className="subtitle">
-              初始总评 {calculateSinglesOverall(preview)}
-            </p>
+            <div className="flex justify-between items-center border-b border-[#182a3c] pb-3">
+              <div>
+                <h1 className="text-2xl font-black text-white m-0">{name}</h1>
+                <p className="text-xs text-slate-400 mt-0.5 mb-0">
+                  初始总评 OVR{" "}
+                  <strong className="text-sky-400">
+                    {calculateSinglesOverall(preview)}
+                  </strong>
+                </p>
+              </div>
+              <span className="bg-blue-600/20 border border-blue-500 text-blue-300 text-xs font-bold px-2.5 py-1 rounded-lg">
+                13 岁 · 少年组
+              </span>
+            </div>
 
             <AttributeList
               attributes={preview.attributes}
@@ -105,9 +140,9 @@ export function CreatorPage() {
               onTabChange={setTab}
             />
 
-            <div className="wizard-actions">
+            <div className="flex gap-3 mt-4">
               <button
-                className="secondary"
+                className="flex-1 bg-[#112030] hover:bg-[#182b40] border border-[#1e354c] text-slate-300 text-sm font-bold py-3 rounded-xl cursor-pointer transition-colors"
                 type="button"
                 onClick={() => setStep(1)}
               >
@@ -115,6 +150,7 @@ export function CreatorPage() {
               </button>
               <button
                 type="button"
+                className="flex-2 bg-linear-to-br from-emerald-500 to-emerald-600 hover:from-emerald-600 hover:to-emerald-700 text-white text-sm font-black py-3 rounded-xl cursor-pointer transition-colors shadow-lg"
                 onClick={() =>
                   dispatch({
                     type: "CREATE_PLAYER",
@@ -128,7 +164,7 @@ export function CreatorPage() {
                   })
                 }
               >
-                开始人生
+                开启羽球人生 🚀
               </button>
             </div>
           </>

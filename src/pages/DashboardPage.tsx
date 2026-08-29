@@ -1,6 +1,87 @@
-import { useState } from 'react'
-import { useGame } from '../state/GameContext'
-import { calculateSinglesOverall } from '../game/player'
-import { createRNG } from '../game/rng'
-type Phase = 'roll'|'allocate'|'season'|'settlement'
-export function DashboardPage(){const {state,dispatch}=useGame();const [phase,setPhase]=useState<Phase>('roll');const [points,setPoints]=useState(0);const [dice,setDice]=useState<number[]>([]);const [month,setMonth]=useState(1);const [score,setScore]=useState(0);if(!state.player)return null;const p=state.player;const next=()=>{if(month===12){dispatch({type:'ANNUAL_SETTLEMENT',payload:{achievementBonus:score>35?5:0}});setMonth(1);setScore(0);setPhase('roll')}else{setMonth(month+1);setPhase('season')}};const roll=()=>{const r=createRNG(`${p.id}-${p.currentSeason}`);const d=Array.from({length:r.int(3,6)},()=>r.int(1,6));setDice(d);setPoints(d.reduce((a,b)=>a+b,0));setPhase('allocate')};const train=(kind:'endurance'|'power'|'reaction'|'top'|'weak'|'all'|'IQ'|'pressure'|'mentality')=>{dispatch({type:'MONTHLY_TRAINING',payload:{kind}});setScore(score+5);next()};return <main className="app-shell"><section className="card"><p className="eyebrow">羽球人生 · {p.age} 岁 · 第 {month}/12 月</p><h1>{p.name}</h1><p>Overall {calculateSinglesOverall(p)}</p>{phase==='roll'&&<><h2>休赛季</h2><p>本年度开始，投掷骰子获得加点。</p><button onClick={roll}>投掷 3–6 颗骰子</button></>}{phase==='allocate'&&<><h2>加点阶段</h2><div className="dice-row">{dice.map((d,i)=><span key={i}>🎲 {d}</span>)}</div><h2>可分配点数：{points}</h2><p>基础属性将在下一阶段继续成长。</p><button onClick={()=>{setPoints(0);setPhase('season')}}>开始新赛季</button></>}{phase==='season'&&<><h2>本月行动</h2><div className="action-grid"><button onClick={()=>train('endurance')}>训练：体能</button><button onClick={()=>train('top')}>训练：专项补强</button><button onClick={()=>train('weak')}>训练：补足弱点</button><button onClick={()=>{dispatch({type:'MONTHLY_REST'});next()}}>休息</button></div></>}{phase==='settlement'&&<><h2>年度结算</h2><p>本年度已完成。</p><button onClick={()=>setPhase('roll')}>开始新赛季</button></>}</section></main>}
+import { useGame } from "../state/GameContext";
+import { ProfileCard } from "../components/ProfileCard";
+import { MonthlyActionPanel } from "../components/MonthlyActionPanel";
+import { TournamentResultCard } from "../components/TournamentResultCard";
+import { AnnualSettlementPanel } from "../components/AnnualSettlementPanel";
+import type { MonthlyTraining } from "../game/monthly";
+
+export function DashboardPage() {
+  const { state, dispatch } = useGame();
+
+  if (!state.player) return null;
+  const p = state.player;
+
+  // 判断当前界面状态
+  const isAnnualSettlement = state.currentMonth > 12 || Boolean(state.annualReport);
+  const showTournamentResult = Boolean(state.lastMonthlyTournament);
+
+  const handleTrain = (kind: MonthlyTraining) => {
+    dispatch({ type: "MONTHLY_ACTION_TRAIN", payload: { kind } });
+    if (state.currentMonth === 12) {
+      dispatch({ type: "START_ANNUAL_SETTLEMENT" });
+    }
+  };
+
+  const handleRest = () => {
+    dispatch({ type: "MONTHLY_ACTION_REST" });
+    if (state.currentMonth === 12) {
+      dispatch({ type: "START_ANNUAL_SETTLEMENT" });
+    }
+  };
+
+  const handleCompete = (tournamentId: string) => {
+    dispatch({ type: "MONTHLY_ACTION_TOURNAMENT", payload: { tournamentId } });
+  };
+
+  const handleDismissTournamentResult = () => {
+    dispatch({ type: "CLEAR_MONTHLY_TOURNAMENT_RESULT" });
+    if (state.currentMonth > 12 && !state.annualReport) {
+      dispatch({ type: "START_ANNUAL_SETTLEMENT" });
+    }
+  };
+
+  const handleConfirmAnnualSettlement = (allocatedAttributes: Record<string, number>) => {
+    dispatch({
+      type: "APPLY_ANNUAL_SETTLEMENT",
+      payload: { allocatedAttributes },
+    });
+  };
+
+  return (
+    <main className="min-h-screen flex justify-center items-start p-4 sm:p-8 box-border text-center bg-[#070d14] text-slate-100 font-sans">
+      <section className="w-full max-w-[680px] bg-[#09111b] border border-[#1a2d3f] rounded-3xl p-5 sm:p-7 shadow-2xl flex flex-col gap-4">
+        {/* 顶部始终显示 ProfileCard */}
+        <ProfileCard player={p} />
+
+        {/* 1. 如果有刚打完的比赛结果，优先展示战报 */}
+        {showTournamentResult && state.lastMonthlyTournament && (
+          <TournamentResultCard
+            result={state.lastMonthlyTournament}
+            onContinue={handleDismissTournamentResult}
+          />
+        )}
+
+        {/* 2. 如果已完成 12 个月，展示年度结算与加点 */}
+        {!showTournamentResult && isAnnualSettlement && state.annualReport && (
+          <AnnualSettlementPanel
+            player={p}
+            report={state.annualReport}
+            onConfirm={handleConfirmAnnualSettlement}
+          />
+        )}
+
+        {/* 3. 正常 1-12 月份行动选择面板 */}
+        {!showTournamentResult && !isAnnualSettlement && (
+          <MonthlyActionPanel
+            player={p}
+            month={state.currentMonth}
+            onTrain={handleTrain}
+            onRest={handleRest}
+            onCompete={handleCompete}
+          />
+        )}
+      </section>
+    </main>
+  );
+}
+
