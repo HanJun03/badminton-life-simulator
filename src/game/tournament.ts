@@ -26,8 +26,18 @@ export function canEnterTournament(
   tournament: Tournament,
 ): boolean {
   if (player.age < 13 || player.age > 18) return false;
-  if (player.rankingPoints < tournament.requiredPoints || player.reputation < tournament.requiredReputation) return false;
-  return tournament.level === "youth" || tournament.level === "local" || tournament.level === "national" || tournament.level === "international-series" || tournament.level === "international-challenge";
+  if (
+    player.rankingPoints < tournament.requiredPoints ||
+    player.reputation < tournament.requiredReputation
+  )
+    return false;
+  return (
+    tournament.level === "youth" ||
+    tournament.level === "local" ||
+    tournament.level === "national" ||
+    tournament.level === "international-series" ||
+    tournament.level === "international-challenge"
+  );
 }
 export function runTournament(
   player: Player,
