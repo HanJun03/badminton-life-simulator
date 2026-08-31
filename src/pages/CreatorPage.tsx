@@ -4,6 +4,7 @@ import { calculateSinglesOverall, createPlayer } from "../game/player";
 import { CountryPicker } from "../components/CountryPicker";
 import { SliderCard } from "../components/SliderCard";
 import { AttributeList, type Tab } from "../components/AttributeList";
+import { SelectableGrid } from "../components/SelectableGrid";
 
 export function CreatorPage() {
   const { state, dispatch } = useGame();
@@ -14,6 +15,7 @@ export function CreatorPage() {
   const [hand, setHand] = useState<"left" | "right">("right");
   const [height, setHeight] = useState(175);
   const [weight, setWeight] = useState(70);
+  const [seed, setSeed] = useState("");
 
   if (state.player) return null;
 
@@ -24,11 +26,12 @@ export function CreatorPage() {
     hand,
     height,
     weight,
+    seed || undefined,
   );
 
   return (
     <div className="min-h-screen flex justify-center items-start p-4 sm:p-8 box-border text-center bg-[#070d14] text-slate-100 font-sans">
-      <section className="w-full max-w-160 bg-[#09111b] border border-[#1a2d3f] rounded-3xl p-6 sm:p-8 shadow-2xl flex flex-col gap-5 text-left">
+      <section className="w-full max-w-160 bg-[#09111b] border border-[#1a2d3f] rounded-3xl p-4 sm:p-8 shadow-2xl flex flex-col gap-2 text-left">
         <p className="text-xs font-bold text-emerald-400 tracking-widest uppercase m-0">
           {step === 1 ? "01 · 创建球员" : "02 · 属性面板"}
         </p>
@@ -62,32 +65,24 @@ export function CreatorPage() {
               <CountryPicker value={nation} onChange={setNation} />
             </div>
 
+            <div className="flex flex-col gap-1.5">
+              <label className="text-xs font-bold text-slate-300">Character Seed（可选）</label>
+              <input
+                className="w-full bg-[#112030] border border-[#263d55] focus:border-amber-400 focus:outline-none text-slate-100 text-sm rounded-xl px-4 py-3 transition-colors shadow-inner"
+                placeholder="留空则自动生成"
+                value={seed}
+                onChange={(e) => setSeed(e.target.value)}
+              />
+            </div>
+
             <div className="flex flex-col gap-2">
               <h2 className="text-sm font-bold text-slate-300 m-0">持拍手</h2>
-              <div className="grid grid-cols-2 gap-3">
-                <button
-                  className={`py-2.5 px-4 rounded-xl text-xs font-bold border transition-all cursor-pointer ${
-                    hand === "left"
-                      ? "bg-linear-to-br from-blue-600 to-blue-700 border-blue-400 text-white shadow-md"
-                      : "bg-[#112030] border-[#1e354c] text-slate-300 hover:bg-[#16273b]"
-                  }`}
-                  type="button"
-                  onClick={() => setHand("left")}
-                >
-                  左手持拍
-                </button>
-                <button
-                  className={`py-2.5 px-4 rounded-xl text-xs font-bold border transition-all cursor-pointer ${
-                    hand === "right"
-                      ? "bg-linear-to-br from-blue-600 to-blue-700 border-blue-400 text-white shadow-md"
-                      : "bg-[#112030] border-[#1e354c] text-slate-300 hover:bg-[#16273b]"
-                  }`}
-                  type="button"
-                  onClick={() => setHand("right")}
-                >
-                  右手持拍
-                </button>
-              </div>
+              <SelectableGrid
+                options={[{ value: "left", label: "左手持拍" }, { value: "right", label: "右手持拍" }] as const}
+                value={hand}
+                onChange={(v) => setHand(v)}
+                ariaLabel="选择持拍手"
+              />
             </div>
 
             <SliderCard
@@ -136,11 +131,12 @@ export function CreatorPage() {
 
             <AttributeList
               attributes={preview.attributes}
+              potentialDetails={preview.potentialDetails}
               activeTab={tab}
-              onTabChange={setTab}
+              onTabChange={(t) => setTab(t)}
             />
 
-            <div className="flex gap-3 mt-4">
+            <div className="flex gap-3 mt-2">
               <button
                 className="flex-1 bg-[#112030] hover:bg-[#182b40] border border-[#1e354c] text-slate-300 text-sm font-bold py-3 rounded-xl cursor-pointer transition-colors"
                 type="button"
@@ -160,6 +156,7 @@ export function CreatorPage() {
                       handedness: hand,
                       height,
                       weight,
+                      seed: seed || undefined,
                     },
                   })
                 }

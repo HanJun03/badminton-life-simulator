@@ -36,6 +36,7 @@ export type GameAction =
         handedness?: "left" | "right";
         height?: number;
         weight?: number;
+        seed?: string;
       };
     }
   | { type: "MONTHLY_ACTION_TRAIN"; payload: { kind: MonthlyTraining } }
@@ -75,6 +76,7 @@ export function gameReducer(state: GameState, action: GameAction): GameState {
         action.payload.handedness ?? "right",
         action.payload.height ?? 175,
         action.payload.weight ?? 70,
+        action.payload.seed,
       ),
       currentMonth: 1,
       seasonLog: initialSeasonLog,
@@ -183,4 +185,3 @@ export function gameReducer(state: GameState, action: GameAction): GameState {
 
   return state;
 }
-

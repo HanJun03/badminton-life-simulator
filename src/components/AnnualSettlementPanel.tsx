@@ -65,6 +65,7 @@ export function AnnualSettlementPanel({
 
       <AttributeList
         attributes={values}
+        potentialDetails={player.potentialDetails}
         activeTab={tab}
         onTabChange={setTab}
         mode="add"
@@ -82,4 +83,3 @@ export function AnnualSettlementPanel({
     </div>
   );
 }
-

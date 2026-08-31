@@ -1,6 +1,7 @@
 import type { Player, Injury } from "./player";
 import type { RNG } from "./rng";
 import type { MonthlyTournamentResult } from "./monthlyTournament";
+import { getCountryProfile } from "../data/countryProfiles";
 
 // 9 种训练分类
 export type MonthlyTraining =
@@ -35,40 +36,44 @@ export function applyMonthlyTraining(
   rng: RNG,
 ): { player: Player; injurySustained?: Injury } {
   const attributes = { ...player.attributes };
-  const keys = Object.keys(attributes);
+  const keys = Object.keys(player.potentialDetails ?? attributes);
+  const trainingFactor = 0.85 + (getCountryProfile(player.nationality).coachingQuality + getCountryProfile(player.nationality).facilityQuality) / 1000;
+  const add = (key: string, amount: number) => {
+    const detail = player.potentialDetails?.[key];
+    const limit = detail?.effectiveCeiling ?? 100;
+    attributes[key] = Math.min(limit, (attributes[key] ?? 0) + Math.max(0, Math.round(amount * trainingFactor)));
+  };
 
   if (kind === "endurance") {
-    attributes.endurance = Math.min(100, (attributes.endurance ?? 45) + 2);
-    attributes.agility = Math.min(100, (attributes.agility ?? 45) + 1);
+    add("endurance", 2); add("agility", 1);
   } else if (kind === "power") {
-    attributes.power = Math.min(100, (attributes.power ?? 45) + 2);
+    add("power", 2);
   } else if (kind === "reaction") {
-    attributes.reaction = Math.min(100, (attributes.reaction ?? 45) + 2);
+    add("reaction", 2);
   } else if (kind === "top") {
     const sorted = [...keys].sort((a, b) => attributes[b] - attributes[a]);
     const top2 = sorted.slice(0, 2);
     top2.forEach((k) => {
-      attributes[k] = Math.min(100, attributes[k] + 1);
+      add(k, 1);
     });
   } else if (kind === "weak") {
     const sorted = [...keys].sort((a, b) => attributes[a] - attributes[b]);
     const weak2 = sorted.slice(0, 2);
     weak2.forEach((k) => {
-      attributes[k] = Math.min(100, attributes[k] + 1);
+      add(k, 1);
     });
   } else if (kind === "all") {
     // 随机挑 4 个属性各 +1
     const shuffled = [...keys].sort(() => rng.int(-1, 1));
     shuffled.slice(0, 4).forEach((k) => {
-      attributes[k] = Math.min(100, attributes[k] + 1);
+      add(k, 1);
     });
   } else if (kind === "IQ") {
-    attributes.IQ = Math.min(100, (attributes.IQ ?? 45) + 2);
+    add("IQ", 2);
   } else if (kind === "pressure") {
-    attributes.pressure = Math.min(100, (attributes.pressure ?? 45) + 1);
-    attributes.willpower = Math.min(100, (attributes.willpower ?? 45) + 1);
+    add("pressure", 1); add("willpower", 1);
   } else if (kind === "mentality") {
-    attributes.mentality = Math.min(100, (attributes.mentality ?? 45) + 2);
+    add("mentality", 2);
   }
 
   // 疲劳增长与伤病检查
@@ -91,6 +96,7 @@ export function applyMonthlyTraining(
   const updatedPlayer: Player = {
     ...player,
     attributes,
+    potentialDetails: Object.fromEntries(Object.entries(player.potentialDetails ?? {}).map(([key, detail]) => [key, { ...detail, current: attributes[key] ?? detail.current }])) as Player["potentialDetails"],
     fatigue: Math.min(100, player.fatigue + fatigueAdd),
     // 训练选什么都能 +状态 & 信心
     morale: Math.max(0, Math.min(100, (player.morale ?? 70) + 3 - healthPenalty)),
@@ -183,4 +189,3 @@ export function applyAnnualSettlement(
       .filter((i) => i.remainingWeeks > 0),
   };
 }
-
