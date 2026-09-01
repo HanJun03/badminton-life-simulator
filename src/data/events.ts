@@ -52,7 +52,7 @@ export const careerEvents: CareerEvent[] = [
           ...p,
           attributes: {
             ...p.attributes,
-            workEthic: Math.min(99, p.attributes.workEthic + 1),
+            willpower: Math.min(99, p.attributes.willpower + 1),
           },
         }),
       },

@@ -4,6 +4,8 @@ import { MonthlyActionPanel } from "../components/MonthlyActionPanel";
 import { TournamentResultCard } from "../components/TournamentResultCard";
 import { AnnualSettlementPanel } from "../components/AnnualSettlementPanel";
 import type { MonthlyTraining } from "../game/monthly";
+import { BodyGrowthCard } from "../components/BodyGrowthCard";
+import { DebugBalancePanel } from "../components/DebugBalancePanel";
 
 export function DashboardPage() {
   const { state, dispatch } = useGame();
@@ -52,6 +54,8 @@ export function DashboardPage() {
       <section className="w-full max-w-[680px] bg-[#09111b] border border-[#1a2d3f] rounded-3xl p-5 sm:p-7 shadow-2xl flex flex-col gap-4">
         {/* 顶部始终显示 ProfileCard */}
         <ProfileCard player={p} />
+        <BodyGrowthCard player={p} />
+        {import.meta.env.DEV && <DebugBalancePanel player={p} />}
 
         {/* 1. 如果有刚打完的比赛结果，优先展示战报 */}
         {showTournamentResult && state.lastMonthlyTournament && (
@@ -84,4 +88,3 @@ export function DashboardPage() {
     </main>
   );
 }
-

@@ -5,8 +5,8 @@ export function advanceAge(player: Player): Player {
   const attributes = { ...player.attributes };
   const years = player.age - 12;
   const heightGap = Math.max(0, player.bodyPotential.heightCeiling - player.height);
-  const weightTarget = Math.min(player.bodyPotential.weightCeiling, Math.round((player.height - 100) * 0.42));
   const nextHeight = Math.min(player.bodyPotential.heightCeiling, player.height + Math.max(0, Math.round(heightGap * player.bodyPotential.heightGrowthRate / 100 * 0.32)));
+  const weightTarget = Math.min(player.bodyPotential.weightCeiling, Math.round((nextHeight - 100) * 0.8));
   const nextWeight = Math.min(player.bodyPotential.weightCeiling, player.weight + Math.max(0, Math.round((weightTarget - player.weight) * player.bodyPotential.weightGrowthRate / 100 * 0.3)));
   const potentialDetails = { ...player.potentialDetails };
   for (const key of coreAttributeKeys) {
@@ -20,7 +20,7 @@ export function advanceAge(player: Player): Player {
     attributes[key] = potentialDetails[key].current;
   }
   if (player.age >= 31)
-    for (const key of ["speed", "explosiveness", "stamina", "agility"] as const)
+    for (const key of ["endurance", "power", "agility", "reaction"] as const)
       attributes[key] = Math.max(1, attributes[key] - 1);
   return {
     ...player,
@@ -42,31 +42,25 @@ export function growPlayer(
 ): Player {
   const groups: Record<string, (keyof Attributes)[]> = {
     technical: [
-      "serve",
       "receive",
       "netPlay",
       "clear",
       "dropShot",
       "smash",
-      "defense",
       "drive",
       "footwork",
     ],
     physical: [
-      "speed",
-      "explosiveness",
-      "strength",
-      "stamina",
+      "endurance",
+      "power",
       "agility",
-      "recovery",
+      "reaction",
     ],
     mental: [
-      "consistency",
-      "composure",
-      "clutch",
-      "concentration",
-      "matchIQ",
-      "workEthic",
+      "IQ",
+      "pressure",
+      "mentality",
+      "willpower",
     ],
   };
   const ageFactor =

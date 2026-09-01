@@ -42,6 +42,12 @@ export function ProfileCard({ player }: ProfileCardProps) {
   const rankingPoints = player.rankingPoints ?? 0;
   const reputation = player.reputation ?? 0;
   const fame = Math.round((player.reputation * 1.5) + (player.careerStats?.titles || 0) * 100);
+  const heightGrowth = Math.max(0, player.bodyPotential.heightCeiling - player.height);
+  const growthHint = heightGrowth > 4
+    ? "他的身体仍处于发育阶段，未来体格可能继续变化。"
+    : overall < 45
+      ? "各项能力仍有较大的成长空间。"
+      : "持续训练将逐步展现他的能力潜力。";
 
   return (
     <div className="bg-gradient-to-br from-[#0c1622] via-[#09111b] to-[#060c14] border border-[#1d354b] rounded-2xl p-4 sm:p-5 text-slate-100 shadow-xl flex flex-col gap-4 text-left">
@@ -127,7 +133,10 @@ export function ProfileCard({ player }: ProfileCardProps) {
           <span className="text-[11px] text-slate-500">知名度</span>
         </div>
       </div>
+      <div className="rounded-xl border border-[#243e59] bg-[#101c2a] px-3 py-2 text-xs text-slate-400">
+        <span className="text-sky-300 font-bold">成长提示</span>
+        <span className="ml-2">{growthHint}</span>
+      </div>
     </div>
   );
 }
-

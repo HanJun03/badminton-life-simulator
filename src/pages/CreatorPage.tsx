@@ -13,8 +13,8 @@ export function CreatorPage() {
   const [name, setName] = useState("");
   const [nation, setNation] = useState("MAS");
   const [hand, setHand] = useState<"left" | "right">("right");
-  const [height, setHeight] = useState(175);
-  const [weight, setWeight] = useState(70);
+  const [height, setHeight] = useState(165);
+  const [weight, setWeight] = useState(52);
   const [seed, setSeed] = useState("");
 
   if (state.player) return null;
@@ -28,6 +28,7 @@ export function CreatorPage() {
     weight,
     seed || undefined,
   );
+  const displayedSeed = seed || preview.characterSeed;
 
   return (
     <div className="min-h-screen flex justify-center items-start p-4 sm:p-8 box-border text-center bg-[#070d14] text-slate-100 font-sans">
@@ -48,34 +49,34 @@ export function CreatorPage() {
             </div>
 
             {/* 输入框：修复字体颜色为高亮白底深色输入框 */}
-            <div className="flex flex-col gap-1.5">
-              <label className="text-xs font-bold text-slate-300">
+            <div className="flex flex-col gap-1">
+              <label className="text-xl font-bold text-slate-300">
                 球员姓名
               </label>
               <input
-                className="w-full bg-[#112030] border focus:border-blue-500 focus:outline-none text-black text-sm font-semibold rounded-xl px-4 py-3 transition-colors shadow-inner"
+                className="w-full m-0! bg-white border border-[#263d55] focus:border-blue-500 focus:outline-none text-black text-sm font-semibold rounded-xl px-4 py-3 transition-colors shadow-inner"
                 placeholder="输入球员名字（如：李宗伟、林丹）"
                 value={name}
                 onChange={(e) => setName(e.target.value)}
               />
             </div>
 
-            <div className="flex flex-col gap-2">
+            <div className="flex flex-col gap-1.5">
               <h2 className="text-sm font-bold text-slate-300 m-0">选择国籍</h2>
               <CountryPicker value={nation} onChange={setNation} />
             </div>
 
             <div className="flex flex-col gap-1.5">
-              <label className="text-xs font-bold text-slate-300">Character Seed（可选）</label>
+              <label className="text-xl font-bold text-slate-300">Character Seed（可选）</label>
               <input
-                className="w-full bg-[#112030] border border-[#263d55] focus:border-amber-400 focus:outline-none text-slate-100 text-sm rounded-xl px-4 py-3 transition-colors shadow-inner"
-                placeholder="留空则自动生成"
-                value={seed}
+                className="w-full m-0! bg-white border border-[#263d55] focus:border-amber-400 focus:outline-none text-black text-sm rounded-xl px-4 py-3 transition-colors shadow-inner"
+                placeholder="输入角色 Seed"
+                value={displayedSeed}
                 onChange={(e) => setSeed(e.target.value)}
               />
             </div>
 
-            <div className="flex flex-col gap-2">
+              <div className="flex flex-col gap-1.5">
               <h2 className="text-sm font-bold text-slate-300 m-0">持拍手</h2>
               <SelectableGrid
                 options={[{ value: "left", label: "左手持拍" }, { value: "right", label: "右手持拍" }] as const}
@@ -86,19 +87,19 @@ export function CreatorPage() {
             </div>
 
             <SliderCard
-              label="身高"
+              label="初始身高"
               unit="cm"
-              min={165}
-              max={195}
+              min={145}
+              max={180}
               value={height}
               onChange={setHeight}
             />
 
             <SliderCard
-              label="体重"
+              label="初始体重"
               unit="kg"
-              min={60}
-              max={90}
+              min={38}
+              max={80}
               value={weight}
               onChange={setWeight}
             />
@@ -156,7 +157,7 @@ export function CreatorPage() {
                       handedness: hand,
                       height,
                       weight,
-                      seed: seed || undefined,
+                      seed: displayedSeed,
                     },
                   })
                 }

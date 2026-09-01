@@ -23,8 +23,8 @@ export interface ResolvedEvent {
 const aliases: Record<string, keyof Player["attributes"]> = {
   power: "power",
   endurance: "endurance",
-  stamina: "stamina",
-  explosiveness: "explosiveness",
+  stamina: "endurance",
+  explosiveness: "power",
   reaction: "reaction",
   footwork: "footwork",
   smash: "smash",

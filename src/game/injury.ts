@@ -18,7 +18,7 @@ export function checkForInjury(
     (player.fatigue - 35) * 0.004 +
       (intensity === "high" ? 0.07 : intensity === "normal" ? 0.02 : 0) +
       Math.max(0, player.age - 30) * 0.003 -
-      player.attributes.recovery * 0.0008,
+      player.attributes.endurance * 0.0008,
   );
   if (!rng.chance(risk)) return player;
   const severity =

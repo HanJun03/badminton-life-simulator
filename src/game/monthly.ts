@@ -2,6 +2,7 @@ import type { Player, Injury } from "./player";
 import type { RNG } from "./rng";
 import type { MonthlyTournamentResult } from "./monthlyTournament";
 import { getCountryProfile } from "../data/countryProfiles";
+import { advanceAge } from "./progression";
 
 // 9 种训练分类
 export type MonthlyTraining =
@@ -175,17 +176,16 @@ export function applyAnnualSettlement(
   player: Player,
   allocatedAttributes: Record<string, number>,
 ): Player {
-  return {
+  const allocatedPlayer: Player = {
     ...player,
     attributes: {
       ...player.attributes,
       ...allocatedAttributes,
     } as typeof player.attributes,
-    age: player.age + 1,
-    currentSeason: player.currentSeason + 1,
     fatigue: Math.max(0, player.fatigue - 30),
     injuries: player.injuries
       .map((i) => ({ ...i, remainingWeeks: i.remainingWeeks - 4 }))
       .filter((i) => i.remainingWeeks > 0),
   };
+  return advanceAge({ ...allocatedPlayer, currentSeason: player.currentSeason });
 }

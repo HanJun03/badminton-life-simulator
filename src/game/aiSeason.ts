@@ -8,10 +8,10 @@ export function advanceAISeason(player: Player, rng: RNG): Player {
   const attributes = { ...aged.attributes };
   const keys = [
     "smash",
-    "defense",
+    "reverse",
     "footwork",
-    "stamina",
-    "consistency",
+    "endurance",
+    "mentality",
   ] as const;
   const direction = aged.age >= 31 ? -1 : 1;
   for (const key of keys)
